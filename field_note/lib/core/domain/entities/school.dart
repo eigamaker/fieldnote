@@ -50,6 +50,35 @@ class School {
     }
   }
 
+  /// 学校のレベル（既存コードとの互換性のため）
+  int get level => strengthLevel;
+
+  /// 学校のレベルテキスト（既存コードとの互換性のため）
+  String get levelText => strengthLevelName;
+
+  /// 学校のタイプテキスト
+  String get typeText {
+    switch (type) {
+      case 'public':
+        return '公立';
+      case 'private':
+        return '私立';
+      case 'national':
+        return '国立';
+      default:
+        return '不明';
+    }
+  }
+
+  /// 生徒数（仮の値）
+  int get studentCount => 500 + (schoolStrength * 10);
+
+  /// 野球部員数（仮の値）
+  int get playerCount => 20 + (strengthLevel * 5);
+
+  /// 創立年（仮の値）
+  DateTime get establishedDate => DateTime(1900 + (schoolStrength * 2));
+
   /// スカウト発見確率を取得
   double get scoutDiscoveryRate {
     switch (rank) {

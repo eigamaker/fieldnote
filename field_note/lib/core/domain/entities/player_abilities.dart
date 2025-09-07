@@ -139,6 +139,7 @@ class PlayerAbilities {
     );
   }
 
+
   /// ランダムな能力値を生成（デフォルト範囲）
   static int _generateRandomAbility() {
     return _generateRandomAbilityInRange(30, 80);

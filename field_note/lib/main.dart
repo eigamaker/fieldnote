@@ -18,6 +18,8 @@ import 'core/domain/repositories/player_repository.dart';
 import 'core/domain/repositories/school_repository.dart';
 import 'core/domain/entities/player.dart';
 import 'core/domain/entities/school.dart';
+import 'core/data/database/database_manager.dart';
+import 'features/players/managers/player_generation_manager.dart';
 // TODO: 新しいシステムのインポート（実装完了後に有効化）
 // import 'core/domain/repositories/scout_repository.dart';
 // import 'core/domain/entities/scout_skills.dart';
@@ -95,9 +97,23 @@ class _FieldNoteHomePageState extends State<FieldNoteHomePage> {
       // ゲーム進行マネージャーを初期化
       _gameProgressManager = GameProgressManager(_gameRepository);
       
+      // データベースを初期化
+      await DatabaseManager.database;
+      
       // 学校データの初期化
       _schoolInitializationManager = SchoolInitializationManager();
       await _schoolInitializationManager.initializeSchools();
+      
+      // ゲーム開始時の選手生成
+      final schools = await _schoolInitializationManager.getAllSchools();
+      if (schools.isNotEmpty) {
+        await PlayerGenerationManager.generateGameStartPlayers(
+          schools: schools,
+          scoutSkill: 50.0, // デフォルトスカウトスキル
+        );
+      } else {
+        print('学校データが読み込まれていないため、選手生成をスキップします');
+      }
       
       // スカウト関連のマネージャーを初期化（実際のSchoolRepositoryを使用）
       _scoutingManager = ScoutingManager(_DummyPlayerRepository(), _schoolInitializationManager);
@@ -218,6 +234,21 @@ class _DummySchoolRepository implements SchoolRepository {
   
   @override
   Future<bool> removePlayerFromSchool(String schoolId, String playerId) async => true;
+
+  @override
+  Future<School?> getSchoolById(int id) async => null;
+
+  @override
+  Future<List<School>> getAllSchools() async => [];
+
+  @override
+  Future<List<School>> getSchoolsByRank(String rank) async => [];
+
+  @override
+  Future<List<School>> getSchoolsByStrengthLevel(int strengthLevel) async => [];
+
+  @override
+  Future<List<School>> getSchoolsByPrefecture(String prefecture) async => [];
 }
 
 /// ゲームリポジトリの実装

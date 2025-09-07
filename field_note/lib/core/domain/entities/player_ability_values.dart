@@ -226,13 +226,13 @@ class PlayerAbilityValues {
     final currentPitcherTechnical = PlayerPitcherTechnicalAbilities.generateHighQuality(scoutSkill);
     
     // ポテンシャル上限値（才能ランクに基づく）
-    final potentialPhysical = _generatePotentialAbilities(currentPhysical, talentMultiplier);
-    final potentialMental = _generatePotentialAbilities(currentMental, talentMultiplier);
+    final potentialPhysical = _generatePotentialPhysicalAbilities(currentPhysical, talentMultiplier);
+    final potentialMental = _generatePotentialMentalAbilities(currentMental, talentMultiplier);
     final potentialPitcherTechnical = _generatePotentialPitcherAbilities(currentPitcherTechnical, talentMultiplier);
     
     // スカウト分析値（現在値に誤差を加える）
-    final scoutedPhysical = _generateScoutedAbilities(currentPhysical, scoutSkill);
-    final scoutedMental = _generateScoutedAbilities(currentMental, scoutSkill);
+    final scoutedPhysical = _generateScoutedPhysicalAbilities(currentPhysical, scoutSkill);
+    final scoutedMental = _generateScoutedMentalAbilities(currentMental, scoutSkill);
     final scoutedPitcherTechnical = _generateScoutedPitcherAbilities(currentPitcherTechnical, scoutSkill);
     
     return PlayerAbilityValues(
@@ -262,13 +262,13 @@ class PlayerAbilityValues {
     final currentBatterTechnical = PlayerBatterTechnicalAbilities.generateHighQuality(scoutSkill);
     
     // ポテンシャル上限値（才能ランクに基づく）
-    final potentialPhysical = _generatePotentialAbilities(currentPhysical, talentMultiplier);
-    final potentialMental = _generatePotentialAbilities(currentMental, talentMultiplier);
+    final potentialPhysical = _generatePotentialPhysicalAbilities(currentPhysical, talentMultiplier);
+    final potentialMental = _generatePotentialMentalAbilities(currentMental, talentMultiplier);
     final potentialBatterTechnical = _generatePotentialBatterAbilities(currentBatterTechnical, talentMultiplier);
     
     // スカウト分析値（現在値に誤差を加える）
-    final scoutedPhysical = _generateScoutedAbilities(currentPhysical, scoutSkill);
-    final scoutedMental = _generateScoutedAbilities(currentMental, scoutSkill);
+    final scoutedPhysical = _generateScoutedPhysicalAbilities(currentPhysical, scoutSkill);
+    final scoutedMental = _generateScoutedMentalAbilities(currentMental, scoutSkill);
     final scoutedBatterTechnical = _generateScoutedBatterAbilities(currentBatterTechnical, scoutSkill);
     
     return PlayerAbilityValues(
@@ -284,8 +284,8 @@ class PlayerAbilityValues {
     );
   }
 
-  /// ポテンシャル能力値を生成（フィジカル・メンタル共通）
-  static PlayerPhysicalAbilities _generatePotentialAbilities(PlayerPhysicalAbilities current, double talentMultiplier) {
+  /// ポテンシャル能力値を生成（フィジカル）
+  static PlayerPhysicalAbilities _generatePotentialPhysicalAbilities(PlayerPhysicalAbilities current, double talentMultiplier) {
     return PlayerPhysicalAbilities(
       strength: (current.strength * talentMultiplier).clamp(1, 150).round(),
       agility: (current.agility * talentMultiplier).clamp(1, 150).round(),
@@ -296,7 +296,8 @@ class PlayerAbilityValues {
     );
   }
 
-  static PlayerMentalAbilities _generatePotentialAbilities(PlayerMentalAbilities current, double talentMultiplier) {
+  /// ポテンシャル能力値を生成（メンタル）
+  static PlayerMentalAbilities _generatePotentialMentalAbilities(PlayerMentalAbilities current, double talentMultiplier) {
     return PlayerMentalAbilities(
       concentration: (current.concentration * talentMultiplier).clamp(1, 150).round(),
       composure: (current.composure * talentMultiplier).clamp(1, 150).round(),
@@ -329,8 +330,8 @@ class PlayerAbilityValues {
     );
   }
 
-  /// スカウト分析能力値を生成（フィジカル・メンタル共通）
-  static PlayerPhysicalAbilities _generateScoutedAbilities(PlayerPhysicalAbilities current, double scoutSkill) {
+  /// スカウト分析能力値を生成（フィジカル）
+  static PlayerPhysicalAbilities _generateScoutedPhysicalAbilities(PlayerPhysicalAbilities current, double scoutSkill) {
     final errorRange = (100 - scoutSkill) / 10; // スカウトスキルが低いほど誤差が大きい
     return PlayerPhysicalAbilities(
       strength: _addRandomError(current.strength, errorRange),
@@ -342,7 +343,8 @@ class PlayerAbilityValues {
     );
   }
 
-  static PlayerMentalAbilities _generateScoutedAbilities(PlayerMentalAbilities current, double scoutSkill) {
+  /// スカウト分析能力値を生成（メンタル）
+  static PlayerMentalAbilities _generateScoutedMentalAbilities(PlayerMentalAbilities current, double scoutSkill) {
     final errorRange = (100 - scoutSkill) / 10;
     return PlayerMentalAbilities(
       concentration: _addRandomError(current.concentration, errorRange),

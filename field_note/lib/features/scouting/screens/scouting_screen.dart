@@ -230,12 +230,12 @@ class _ScoutingScreenState extends State<ScoutingScreen> {
     try {
       // スカウトを実行
       final scoutAction = await widget.scoutingManager.executeScouting(
-        schoolId: _selectedSchool!.id,
+        schoolId: _selectedSchool!.id.toString(),
         scoutSkill: _scoutSkill,
       );
 
       // 発見した選手を取得
-      final discoveredPlayers = await widget.scoutingManager.getSchoolPlayers(_selectedSchool!.id);
+      final discoveredPlayers = await widget.scoutingManager.getSchoolPlayers(_selectedSchool!.id.toString());
 
       if (mounted) {
         // 結果画面に遷移

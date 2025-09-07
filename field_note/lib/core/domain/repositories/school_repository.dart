@@ -31,4 +31,19 @@ abstract class SchoolRepository {
   
   /// 学校から選手を削除
   Future<bool> removePlayerFromSchool(String schoolId, String playerId);
+  
+  /// 学校をIDで取得
+  Future<School?> getSchoolById(int id);
+  
+  /// すべての学校を取得
+  Future<List<School>> getAllSchools();
+  
+  /// ランク別の学校を取得
+  Future<List<School>> getSchoolsByRank(String rank);
+  
+  /// 強度レベル別の学校を取得
+  Future<List<School>> getSchoolsByStrengthLevel(int strengthLevel);
+  
+  /// 都道府県別の学校を取得（既存メソッドとの互換性のため）
+  Future<List<School>> getSchoolsByPrefecture(String prefecture);
 }

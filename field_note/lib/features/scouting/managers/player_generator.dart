@@ -24,7 +24,7 @@ class PlayerGenerator {
     for (int i = 0; i < playerCount; i++) {
       final position = _selectPosition(random + i);
       final player = Player.generate(
-        schoolId: school.id,
+        schoolId: school.id.toString(),
         scoutSkill: scoutAction.scoutSkill,
         position: position,
       );

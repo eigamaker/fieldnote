@@ -5,6 +5,7 @@ import '../../../core/domain/entities/scout_action.dart';
 import '../../../core/domain/repositories/player_repository.dart';
 import '../../../core/domain/repositories/school_repository.dart';
 import 'player_generator.dart';
+import '../../players/managers/player_generation_manager.dart';
 
 /// スカウト機能を管理するマネージャークラス
 class ScoutingManager {
@@ -44,10 +45,11 @@ class ScoutingManager {
         scoutSkill: scoutSkill,
       );
       
-      // 選手を生成
-      final discoveredPlayers = PlayerGenerator.generatePlayersFromScouting(
-        scoutAction: scoutAction,
+      // 選手を生成（新しいシステムを使用）
+      final discoveredPlayers = await PlayerGenerationManager.generateScoutingPlayers(
         school: school,
+        scoutSkill: scoutSkill,
+        maxPlayers: 3, // 最大3名
       );
       
       // 発見した選手を保存
@@ -60,7 +62,7 @@ class ScoutingManager {
       
       // スカウトアクションを更新
       final completedScoutAction = scoutAction.copyWith(
-        discoveredPlayerIds: discoveredPlayers.map((p) => p.id).toList(),
+        discoveredPlayerIds: discoveredPlayers.map<String>((p) => p.id).toList(),
         isCompleted: true,
       );
       

@@ -35,6 +35,32 @@ class Player {
     return abilities.overallRating;
   }
 
+  /// ポジション表示名を取得
+  String get positionDisplayName {
+    switch (position) {
+      case 'P':
+        return '投手';
+      case 'C':
+        return '捕手';
+      case '1B':
+        return '一塁手';
+      case '2B':
+        return '二塁手';
+      case '3B':
+        return '三塁手';
+      case 'SS':
+        return '遊撃手';
+      case 'LF':
+        return '左翼手';
+      case 'CF':
+        return '中堅手';
+      case 'RF':
+        return '右翼手';
+      default:
+        return position;
+    }
+  }
+
   /// 選手の平均能力値を取得（新しいシステム優先）
   double get averageAbility {
     if (newAbilities != null) {
@@ -108,31 +134,6 @@ class Player {
     }
   }
 
-  /// 選手のポジション表示名を取得
-  String get positionDisplayName {
-    switch (position) {
-      case 'P':
-        return '投手';
-      case 'C':
-        return '捕手';
-      case '1B':
-        return '一塁手';
-      case '2B':
-        return '二塁手';
-      case '3B':
-        return '三塁手';
-      case 'SS':
-        return '遊撃手';
-      case 'LF':
-        return '左翼手';
-      case 'CF':
-        return '中堅手';
-      case 'RF':
-        return '右翼手';
-      default:
-        return position;
-    }
-  }
 
   /// 選手の詳細情報を取得
   String get detailedInfo {
