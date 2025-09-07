@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   flame: ^1.32.0
   path_provider: ^2.1.5
+  cryptography: ^2.7.0
+  csv: ^6.0.0
 
 dev_dependencies:
   flutter_test:

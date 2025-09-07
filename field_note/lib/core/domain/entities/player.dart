@@ -1,4 +1,5 @@
 import 'player_abilities.dart';
+import 'player_ability_values.dart';
 
 /// 選手を管理するエンティティクラス
 class Player {
@@ -7,7 +8,8 @@ class Player {
   final int age;
   final int grade;
   final String position;
-  final PlayerAbilities abilities;
+  final PlayerAbilities abilities; // 既存システムとの互換性のため保持
+  final PlayerAbilityValues? newAbilities; // 新しい能力値システム
   final String schoolId;
   final DateTime discoveredDate;
   final double scoutSkillUsed;
@@ -19,28 +21,78 @@ class Player {
     required this.grade,
     required this.position,
     required this.abilities,
+    this.newAbilities,
     required this.schoolId,
     required this.discoveredDate,
     required this.scoutSkillUsed,
   });
 
-  /// 選手の総合評価を取得
-  String get overallRating => abilities.overallRating;
+  /// 選手の総合評価を取得（新しいシステム優先）
+  String get overallRating {
+    if (newAbilities != null) {
+      return newAbilities!.overallRating;
+    }
+    return abilities.overallRating;
+  }
 
-  /// 選手の平均能力値を取得
-  double get averageAbility => abilities.averageAbility;
+  /// 選手の平均能力値を取得（新しいシステム優先）
+  double get averageAbility {
+    if (newAbilities != null) {
+      return newAbilities!.currentOverall;
+    }
+    return abilities.averageAbility;
+  }
 
-  /// 選手の総合能力値を取得
-  int get totalAbility => abilities.totalAbility;
+  /// 選手の総合能力値を取得（新しいシステム優先）
+  int get totalAbility {
+    if (newAbilities != null) {
+      return newAbilities!.currentPhysical.total + 
+             newAbilities!.currentMental.total +
+             (newAbilities!.isPitcher ? newAbilities!.currentPitcherTechnical!.total : 0) +
+             (newAbilities!.isBatter ? newAbilities!.currentBatterTechnical!.total : 0);
+    }
+    return abilities.totalAbility;
+  }
 
-  /// 選手の打者としての評価を取得
-  int get battingRating => abilities.battingAbility;
+  /// 選手の打者としての評価を取得（新しいシステム優先）
+  int get battingRating {
+    if (newAbilities != null && newAbilities!.isBatter) {
+      return newAbilities!.currentBatterTechnical!.battingAverage.round();
+    }
+    return abilities.battingAbility;
+  }
 
-  /// 選手の投手としての評価を取得
-  int get pitchingRating => abilities.pitchingAbility;
+  /// 選手の投手としての評価を取得（新しいシステム優先）
+  int get pitchingRating {
+    if (newAbilities != null && newAbilities!.isPitcher) {
+      return newAbilities!.currentPitcherTechnical!.average.round();
+    }
+    return abilities.pitchingAbility;
+  }
 
-  /// 選手の守備者としての評価を取得
-  int get fieldingRating => abilities.fieldingAbility;
+  /// 選手の守備者としての評価を取得（新しいシステム優先）
+  int get fieldingRating {
+    if (newAbilities != null && newAbilities!.isBatter) {
+      return newAbilities!.currentBatterTechnical!.fieldingAverage.round();
+    }
+    return abilities.fieldingAbility;
+  }
+
+  /// スカウト分析のOverall評価を取得
+  String get scoutedOverallRating {
+    if (newAbilities != null) {
+      return newAbilities!.scoutedOverallRating;
+    }
+    return overallRating; // フォールバック
+  }
+
+  /// ポテンシャル上限のOverall評価を取得
+  double get potentialOverall {
+    if (newAbilities != null) {
+      return newAbilities!.potentialOverall;
+    }
+    return averageAbility; // フォールバック
+  }
 
   /// 選手の年齢に基づく学年を取得
   String get gradeText {
@@ -106,6 +158,7 @@ class Player {
     int? grade,
     String? position,
     PlayerAbilities? abilities,
+    PlayerAbilityValues? newAbilities,
     String? schoolId,
     DateTime? discoveredDate,
     double? scoutSkillUsed,
@@ -117,6 +170,7 @@ class Player {
       grade: grade ?? this.grade,
       position: position ?? this.position,
       abilities: abilities ?? this.abilities,
+      newAbilities: newAbilities ?? this.newAbilities,
       schoolId: schoolId ?? this.schoolId,
       discoveredDate: discoveredDate ?? this.discoveredDate,
       scoutSkillUsed: scoutSkillUsed ?? this.scoutSkillUsed,
@@ -132,6 +186,7 @@ class Player {
       'grade': grade,
       'position': position,
       'abilities': abilities.toJson(),
+      'newAbilities': newAbilities?.toJson(),
       'schoolId': schoolId,
       'discoveredDate': discoveredDate.toIso8601String(),
       'scoutSkillUsed': scoutSkillUsed,
@@ -147,13 +202,16 @@ class Player {
       grade: json['grade'],
       position: json['position'],
       abilities: PlayerAbilities.fromJson(json['abilities']),
+      newAbilities: json['newAbilities'] != null 
+          ? PlayerAbilityValues.fromJson(json['newAbilities'])
+          : null,
       schoolId: json['schoolId'],
       discoveredDate: DateTime.parse(json['discoveredDate']),
       scoutSkillUsed: json['scoutSkillUsed']?.toDouble() ?? 0.0,
     );
   }
 
-  /// 新しい選手を生成
+  /// 新しい選手を生成（既存システム）
   factory Player.generate({
     required String schoolId,
     required double scoutSkill,
@@ -194,6 +252,60 @@ class Player {
       grade: grade,
       position: position,
       abilities: abilities,
+      schoolId: schoolId,
+      discoveredDate: now,
+      scoutSkillUsed: scoutSkill,
+    );
+  }
+
+  /// 新しい選手を生成（新しい能力値システム）
+  factory Player.generateWithNewAbilities({
+    required String schoolId,
+    required double scoutSkill,
+    required String position,
+    required int talentRank,
+  }) {
+    final now = DateTime.now();
+    final random = DateTime.now().millisecondsSinceEpoch;
+    
+    // 年齢と学年を適切に設定（15-18歳、1-3年生）
+    final age = 15 + (random % 4);
+    final grade = 1 + (random % 3);
+    
+    // 名前を生成
+    final names = [
+      '田中', '佐藤', '鈴木', '高橋', '渡辺', '伊藤', '山本', '中村', '小林', '加藤',
+      '吉田', '山田', '佐々木', '山口', '松本', '井上', '木村', '林', '斎藤', '清水',
+      '山崎', '森', '池田', '橋本', '阿部', '石川', '山下', '中島', '石井', '小川',
+      '前田', '岡田', '長谷川', '藤田', '近藤', '坂本', '福田', '松井', '渡部', '青木',
+      '西村', '岡本', '中川', '中野', '原田', '小野', '田村', '竹内', '金子', '和田'
+    ];
+    final firstNames = [
+      '翔太', '健太', '大輔', '誠', '直樹', '浩二', '健一', '正人', '博', '明',
+      '達也', '智也', '裕也', '剛', '勇', '進', '学', '悟', '聡', '優',
+      '和也', '健二', '正義', '正雄', '正一', '正二', '正三', '正四', '正五', '正六'
+    ];
+    
+    final lastName = names[random % names.length];
+    final firstName = firstNames[random % firstNames.length];
+    final name = '$lastName $firstName';
+    
+    // 既存システムの能力値（互換性のため）
+    final abilities = PlayerAbilities.generateHighQuality(scoutSkill);
+    
+    // 新しいシステムの能力値
+    final newAbilities = position == 'P' 
+        ? PlayerAbilityValues.generatePitcher(scoutSkill: scoutSkill, talentRank: talentRank)
+        : PlayerAbilityValues.generateBatter(scoutSkill: scoutSkill, talentRank: talentRank);
+    
+    return Player(
+      id: 'player_${now.millisecondsSinceEpoch}_${random % 10000}',
+      name: name,
+      age: age,
+      grade: grade,
+      position: position,
+      abilities: abilities,
+      newAbilities: newAbilities,
       schoolId: schoolId,
       discoveredDate: now,
       scoutSkillUsed: scoutSkill,
